@@ -4,8 +4,6 @@ import dotenv from 'dotenv';
 
 const port = process.env.PORT || '3000';
 
-const application = new App([
-    new UserController()
-])
+const application = new App([new UserController()]);
 
 export default application.listen(port);

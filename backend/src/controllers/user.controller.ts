@@ -1,31 +1,24 @@
 import { NextFunction, Request, Response, Router } from 'express';
 
+class UserController {
+  public path = '/user';
+  public router = Router();
 
-class UserController{
-    public path = '/user'
-    public router = Router();
+  constructor() {
+    this.initalizeRoutes();
+  }
 
-    constructor(){
-        this.initalizeRoutes()
-    }
+  initalizeRoutes(): void {
+    this.router.post(`new`, this.createUser);
+    this.router.get('/', this.getUserByEmail);
+    this.router.post('/edit/:userId', this.editUser);
+  }
 
-    initalizeRoutes(): void {
-        this.router.post(`new`, this.createUser);
-        this.router.get('/', this.getUserByEmail)
-        this.router.post('/edit/:userId', this.editUser)
-    }
+  private getUserByEmail() {}
 
-    private getUserByEmail(){
+  private editUser() {}
 
-    }
-
-    private editUser(){
-
-    }
-
-    private createUser(){
-        
-    }
+  private createUser() {}
 }
 
 export default UserController;
