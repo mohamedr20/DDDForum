@@ -13,13 +13,14 @@ type ValidationError = 'ValidationError';
 type ServerError = 'ServerError';
 type UserNotFound = 'UserNotFound';
 
-type ErrorName =
+export type ErrorName =
   | EmailAlreadyInUse
   | UserNameTaken
   | UserNotFound
   | ValidationError
   | ServerError;
-type ExceptionType =
+  
+export type ExceptionType =
   | UserNameTakenException
   | EmailAlreadyInUseException
   | ValidationException
@@ -58,5 +59,6 @@ export type EditUserResponse =
   | SuccessUserResponse
   | UserNameAlreadyTakenResponse
   | EmailAlreadyInUseResponse;
+
 export type GetUserByEmailResponse = SuccessUserResponse | UserNotFoundResponse;
 export type CreateUserResponse = SuccessUserResponse;
