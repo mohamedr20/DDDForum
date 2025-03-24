@@ -9,7 +9,8 @@ import { ErrorName, ExceptionType } from '../types';
  * @returns {boolean}
  */
 export function validateFields(user: Partial<User>) {
-  return Object.values(user).filter((val) => !!val === true).length > 0;
+  const result = Object.values(user).filter((val) => !!val === true);
+  return Object.values(user).filter((val) => !!val === false).length > 0;
 }
 
 /**

@@ -61,4 +61,3 @@ export type EditUserResponse =
   | EmailAlreadyInUseResponse;
 
 export type GetUserByEmailResponse = UserSuccessResponse | UserNotFoundResponse;
-
