@@ -8,10 +8,10 @@ import {
   ValidationException
 } from '../errors/index';
 import {
-  CreateUserResponse,
   EditUserResponse,
   ErrorResponse,
-  GetUserByEmailResponse
+  GetUserByEmailResponse,
+  UserSuccessResponse
 } from '../types';
 import { generateRandomPassword, validateFields } from '../helpers';
 
@@ -134,12 +134,13 @@ class UserController {
 
   private createUser = async (
     req: Request,
-    res: Response<CreateUserResponse | ErrorResponse>,
+    res: Response<UserSuccessResponse | ErrorResponse>,
     _next: NextFunction
   ): Promise<any> => {
     const createUserResponse = await this.prisma.user.create({
       data: {
         email: req.body.email,
+        username: req.body.username,
         password: generateRandomPassword(),
         firstName: req.body.firstName,
         lastName: req.body.lastName

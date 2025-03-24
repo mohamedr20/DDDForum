@@ -50,15 +50,15 @@ export type ErrorResponse = {
   success: boolean;
 };
 
-export type SuccessUserResponse = {
+export type UserSuccessResponse = {
   data: User | User['id'];
   success: true;
 };
 
 export type EditUserResponse =
-  | SuccessUserResponse
+  | UserSuccessResponse
   | UserNameAlreadyTakenResponse
   | EmailAlreadyInUseResponse;
 
-export type GetUserByEmailResponse = SuccessUserResponse | UserNotFoundResponse;
-export type CreateUserResponse = SuccessUserResponse;
+export type GetUserByEmailResponse = UserSuccessResponse | UserNotFoundResponse;
+
