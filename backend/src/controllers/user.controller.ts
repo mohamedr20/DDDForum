@@ -13,8 +13,7 @@ import {
   ErrorResponse,
   GetUserByEmailResponse
 } from '../types';
-import UsernameTakenException from '../errors/UserNameTakenException';
-import { validateFields } from '../helpers';
+import { generateRandomPassword, validateFields } from '../helpers';
 
 class UserController {
   public path = '/users';
@@ -108,7 +107,7 @@ class UserController {
 
       if (userWithUsername) {
         return res.status(409).json({
-          error: new UsernameTakenException(),
+          error: new UserNameTakenException(),
           data: 'UsernameAlreadyTaken',
           success: false
         });
@@ -141,7 +140,7 @@ class UserController {
     const createUserResponse = await this.prisma.user.create({
       data: {
         email: req.body.email,
-        password: req.body.password,
+        password: generateRandomPassword(),
         firstName: req.body.firstName,
         lastName: req.body.lastName
       }

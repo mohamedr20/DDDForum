@@ -19,7 +19,7 @@ export type ErrorName =
   | UserNotFound
   | ValidationError
   | ServerError;
-  
+
 export type ExceptionType =
   | UserNameTakenException
   | EmailAlreadyInUseException
