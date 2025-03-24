@@ -1,28 +1,7 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { PrismaClient, User } from '@prisma/client';
-
-type GetUserByEmailResponse = {
-  error: string | undefined;
-  success: boolean;
-  data: User;
-};
-
-type UserNotFoundResponse = {
-  message: string;
-};
-
-type CreateUserResponse = {
-  error: string | undefined;
-  success: boolean;
-  data: User['id'];
-};
-
-type EditUserResponse = {
-  error: string | undefined;
-  success: boolean;
-  data: User;
-};
-
+import { PrismaClient} from '@prisma/client';
+import {UserNotFoundException, ServerException} from '../errors/index'
+import {GetUserByEmailResponse, UserNotFoundResponse, EditUserResponse, CreateUserResponse} from '../types/responses'
 class UserController {
   public path = '/users';
   public router = Router();
@@ -44,24 +23,33 @@ class UserController {
     next: NextFunction
   ): Promise<any> => {
     console.log(req.query);
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: req.query.email as string
-      }
-    });
-
-    if (!user) {
-      console.log('unable to find the user');
-      return res.status(404).json({
-        message: 'Unable to find the user'
-      });
+    try{
+        const user = await this.prisma.user.findUnique({
+            where: {
+              email: req.query.email as string
+            }
+          });
+          if (!user) {
+            return res.status(404).json({
+              error: new UserNotFoundException("User Not Found"),
+              data: undefined,
+              success: false
+            });
+          }
+          return res.status(200).json({
+            error: undefined,
+            data: user,
+            success: true
+          });
+    } catch(err){
+        if(err instanceof Error){
+            return res.status(500).json({
+                error: new ServerException(err.message),
+                data: undefined,
+                success: false
+            })
+        }
     }
-
-    return res.status(200).json({
-      error: undefined,
-      data: user,
-      success: true
-    });
   };
 
   private editUser = async (
