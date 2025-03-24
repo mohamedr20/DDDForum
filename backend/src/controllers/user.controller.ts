@@ -1,13 +1,20 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { UserNotFoundException, ServerException, EmailAlreadyInUseException, UserNameTakenException, ValidationException } from '../errors/index';
 import {
-    CreateUserResponse,
-    EditUserResponse,
-    ErrorResponse,
-    GetUserByEmailResponse,
+  UserNotFoundException,
+  ServerException,
+  EmailAlreadyInUseException,
+  UserNameTakenException,
+  ValidationException
+} from '../errors/index';
+import {
+  CreateUserResponse,
+  EditUserResponse,
+  ErrorResponse,
+  GetUserByEmailResponse
 } from '../types';
 import UsernameTakenException from '../errors/UserNameTakenException';
+import { validateFields } from '../helpers';
 
 class UserController {
   public path = '/users';
@@ -64,39 +71,48 @@ class UserController {
     res: Response<EditUserResponse | ErrorResponse>,
     _next: NextFunction
   ): Promise<any> => {
-    const {email, id, username} = req.body;
+    const { email, id, username } = req.body;
     const userId = Number(id);
+    const invalidPayload = validateFields(req.body);
 
-    if(email){
-        const userWithEmail = await this.prisma.user.findFirst({
-            where: {
-                email: req.body.email
-            }
-        })
-
-        if(userWithEmail){
-            return res.status(409).json({
-                error: new EmailAlreadyInUseException(),
-                data: 'EmailAlreadyInUse', 
-                success: false
-            })
-        }
+    if (invalidPayload) {
+      return res.status(400).json({
+        error: new ValidationException(),
+        data: 'ValidationError',
+        success: false
+      });
     }
 
-    if(username){
-        const userWithUsername = await this.prisma.user.findFirst({
-            where: {
-                email: req.body.email
-            }
-        })
-
-        if(userWithUsername){
-            return res.status(409).json({
-                error: new UsernameTakenException(),
-                data: 'UsernameAlreadyTaken',
-                success: false
-            })
+    if (email) {
+      const userWithEmail = await this.prisma.user.findFirst({
+        where: {
+          email: req.body.email
         }
+      });
+
+      if (userWithEmail) {
+        return res.status(409).json({
+          error: new EmailAlreadyInUseException(),
+          data: 'EmailAlreadyInUse',
+          success: false
+        });
+      }
+    }
+
+    if (username) {
+      const userWithUsername = await this.prisma.user.findFirst({
+        where: {
+          email: req.body.email
+        }
+      });
+
+      if (userWithUsername) {
+        return res.status(409).json({
+          error: new UsernameTakenException(),
+          data: 'UsernameAlreadyTaken',
+          success: false
+        });
+      }
     }
 
     const user = await this.prisma.user.update({
@@ -106,17 +122,15 @@ class UserController {
       data: { ...req.body }
     });
 
-    if(!user){
-        return res.status(404).json({
-            error: new UserNotFoundException(),
-            data: 'UserNotFound',
-            success: false
-        })
+    if (!user) {
+      return res.status(404).json({
+        error: new UserNotFoundException(),
+        data: 'UserNotFound',
+        success: false
+      });
     }
 
-    return res
-      .status(200)
-      .json({  success: true, data: user });
+    return res.status(200).json({ success: true, data: user });
   };
 
   private createUser = async (
@@ -133,9 +147,7 @@ class UserController {
       }
     });
 
-    return res
-      .status(201)
-      .json({ success: true, data: createUserResponse.id });
+    return res.status(201).json({ success: true, data: createUserResponse.id });
   };
 }
 

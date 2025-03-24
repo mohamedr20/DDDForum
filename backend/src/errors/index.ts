@@ -5,4 +5,11 @@ import EmailAlreadyInUseException from './EmailAlreadyInUseException';
 import UserNameTakenException from './UserNameTakenException';
 import ValidationException from './ValidationException';
 
-export { HttpException, UserNotFoundException, ServerException, EmailAlreadyInUseException, UserNameTakenException, ValidationException };
+export {
+  HttpException,
+  UserNotFoundException,
+  ServerException,
+  EmailAlreadyInUseException,
+  UserNameTakenException,
+  ValidationException
+};
