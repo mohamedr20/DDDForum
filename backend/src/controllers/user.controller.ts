@@ -1,12 +1,13 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { UserNotFoundException, ServerException } from '../errors/index';
+import { UserNotFoundException, ServerException, EmailAlreadyInUseException, UserNameTakenException, ValidationException } from '../errors/index';
 import {
-  GetUserByEmailResponse,
-  UserNotFoundResponse,
-  EditUserResponse,
-  CreateUserResponse
+    CreateUserResponse,
+    EditUserResponse,
+    ErrorResponse,
+    GetUserByEmailResponse,
 } from '../types';
+import UsernameTakenException from '../errors/UserNameTakenException';
 
 class UserController {
   public path = '/users';
@@ -25,25 +26,25 @@ class UserController {
 
   private getUserByEmail = async (
     req: Request,
-    res: Response<GetUserByEmailResponse | UserNotFoundResponse>,
-    next: NextFunction
+    res: Response<GetUserByEmailResponse | ErrorResponse>,
+    _next: NextFunction
   ): Promise<any> => {
-    console.log(req.query);
     try {
       const user = await this.prisma.user.findUnique({
         where: {
           email: req.query.email as string
         }
       });
+
       if (!user) {
         return res.status(404).json({
-          error: new UserNotFoundException('User Not Found'),
-          data: undefined,
+          error: new UserNotFoundException(),
+          data: 'UserNotFound',
           success: false
         });
       }
+
       return res.status(200).json({
-        error: undefined,
         data: user,
         success: true
       });
@@ -51,7 +52,7 @@ class UserController {
       if (err instanceof Error) {
         return res.status(500).json({
           error: new ServerException(err.message),
-          data: undefined,
+          data: 'ServerError',
           success: false
         });
       }
@@ -60,25 +61,68 @@ class UserController {
 
   private editUser = async (
     req: Request,
-    res: Response<EditUserResponse>,
-    next: NextFunction
+    res: Response<EditUserResponse | ErrorResponse>,
+    _next: NextFunction
   ): Promise<any> => {
-    const editUserResponse = await this.prisma.user.update({
+    const {email, id, username} = req.body;
+    const userId = Number(id);
+
+    if(email){
+        const userWithEmail = await this.prisma.user.findFirst({
+            where: {
+                email: req.body.email
+            }
+        })
+
+        if(userWithEmail){
+            return res.status(409).json({
+                error: new EmailAlreadyInUseException(),
+                data: 'EmailAlreadyInUse', 
+                success: false
+            })
+        }
+    }
+
+    if(username){
+        const userWithUsername = await this.prisma.user.findFirst({
+            where: {
+                email: req.body.email
+            }
+        })
+
+        if(userWithUsername){
+            return res.status(409).json({
+                error: new UsernameTakenException(),
+                data: 'UsernameAlreadyTaken',
+                success: false
+            })
+        }
+    }
+
+    const user = await this.prisma.user.update({
       where: {
-        id: Number(req.params.userId)
+        id: userId
       },
       data: { ...req.body }
     });
 
+    if(!user){
+        return res.status(404).json({
+            error: new UserNotFoundException(),
+            data: 'UserNotFound',
+            success: false
+        })
+    }
+
     return res
       .status(200)
-      .json({ error: undefined, success: true, data: editUserResponse });
+      .json({  success: true, data: user });
   };
 
   private createUser = async (
     req: Request,
-    res: Response<CreateUserResponse>,
-    next: NextFunction
+    res: Response<CreateUserResponse | ErrorResponse>,
+    _next: NextFunction
   ): Promise<any> => {
     const createUserResponse = await this.prisma.user.create({
       data: {
@@ -91,7 +135,7 @@ class UserController {
 
     return res
       .status(201)
-      .json({ error: undefined, success: true, data: createUserResponse.id });
+      .json({ success: true, data: createUserResponse.id });
   };
 }
 
